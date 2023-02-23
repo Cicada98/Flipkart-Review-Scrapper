@@ -11,19 +11,19 @@ app=application
 @app.route('/',methods=['GET'])  # route to display the home page
 @cross_origin() # if region in aws is mumbai, this allows us to use the url in US also
 def homePage():
-    return render_template("index.html")
+    return render_template("index.html") # render index.html as the homepage
 
 @app.route('/review',methods=['POST','GET']) # route to show the review comments in a web UI
 @cross_origin()
 def index():
     if request.method == 'POST':
         try:
-            searchString = request.form['content'].replace(" ","")
+            searchString = request.form['content'].replace(" ","")#replcases all spaces with no spaces since we dont want spaces in our url
             flipkart_url = "https://www.flipkart.com/search?q=" + searchString
             uClient = uReq(flipkart_url)
-            flipkartPage = uClient.read()
+            flipkartPage = uClient.read()#unindented html file
             uClient.close()
-            flipkart_html = bs(flipkartPage, "html.parser")
+            flipkart_html = bs(flipkartPage, "html.parser")# now html file is indented
             bigboxes = flipkart_html.findAll("div", {"class": "_1AtVbE col-12-12"})
             del bigboxes[0:3]
             box = bigboxes[0]
@@ -69,13 +69,13 @@ def index():
                     print("Exception while creating dictionary: ",e)
 
                 mydict = {"Product": searchString, "Name": name, "Rating": rating, "CommentHead": commentHead,
-                          "Comment": custComment}
+                          "Comment": custComment} #list contains data in form of dictionary, using it store data in mongodb in json format
                 reviews.append(mydict)
             client = pymongo.MongoClient("mongodb+srv://ratnakar1997:ratnu1997@cluster0.gcul2vn.mongodb.net/?retryWrites=true&w=majority")
             db = client['review_scrap']
             review_col = db['review_scrap_data']
             review_col.insert_many(reviews)
-            return render_template('results.html', reviews=reviews[0:(len(reviews)-1)])
+            return render_template('results.html', reviews=reviews[0:(len(reviews)-1)])# all the review in reviews list are being pasted onto the webpage here
         except Exception as e:
             print('The Exception message is: ',e)
             return 'something is wrong'
